@@ -16,6 +16,28 @@ typedef struct {
     //both fields are 4 bytes long meaning each header is in total 8 bytes
 } header;
 
+static header *findNextChunk(header *chunk){
+    return chunk + chunk ->size / 8;
+}
+
+static void findLeaks(void){
+ header *end = (header*)(heap.bytes + MEMLENGTH);
+ header *ptr = (header*)(heap.bytes);
+
+ int count = 0;
+ int totalAmt = 0;
+ while (ptr < end){
+    if (!((*ptr).is_available)){
+        count++;
+        totalAmt += (*ptr).size - 8;
+    }
+    ptr = findNextChunk(ptr);
+ }
+ if (count > 0) {
+    fprintf(stderr, "mymalloc: %d bytes leaked in %d objects.\n", totalAmt, count);
+ }
+}
+
 
 static void initialize_heap() {
     header *first_header = (header *)heap.bytes;
@@ -25,21 +47,24 @@ static void initialize_heap() {
     first_header->is_available = 1;
     first_header->size = MEMLENGTH;
 
-    //To do: register a leak detection function
+  
     is_initialized = 1;
+    atexit(findLeaks); // run findLeaks when program ends
 }
+
+
+
 
 void *tryAllocate(size_t size_to_allocate) {
     header *boundary = (header *)(heap.bytes + MEMLENGTH);
     
     header *ptr = (header *)heap.bytes;
     while ((ptr < boundary)) {
-        if ((ptr->is_available) && (ptr->size >= size_to_allocate)) {
-            if ((size_to_allocate + 8) >= ptr->size) {
-                ptr->is_available = 0;
-                //if the chunk we take has only 8 bytes left, there's not enough space for
-                //any other data there so we can just inhabit that whole chunk
-                return (void *)(ptr + 1); //add 1 because we want to point to payload, not header
+        if ((ptr->is_available) && (ptr->size >= size_to_allocate+8)) {
+            size_t leftover = ptr->size - (size_to_allocate+8);
+             if (leftover < 16) {
+                    ptr-> is_available = 0;
+                    return (void*)(ptr+1);
             }
             else {
                 //otherwise we have to partition this chunk
@@ -48,7 +73,7 @@ void *tryAllocate(size_t size_to_allocate) {
                 newPtr->size = (ptr->size - size_to_allocate - 8);
                 //new chunk has the size of our original chunk minus space needed
                 ptr->is_available = 0;
-                ptr->size = size_to_allocate;
+                ptr->size = size_to_allocate+8;
                 return (void *)(ptr + 1); //add 1 because we want to point to payload, not header
             }
         }
