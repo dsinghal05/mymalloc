@@ -82,7 +82,7 @@ void *tryAllocate(size_t size_to_allocate) {
     }
     //if we reach here then there's no available chunks with adequate size
     //To do: print message to standard error
-    return NULL;
+    exit(2);
 }
 
 
@@ -99,7 +99,52 @@ void *mymalloc(size_t size, char *file, int line)
     return returnptr;
 }
 
+void coalesce (header *chunk1, header *chunk2) {
+    chunk1->size += chunk2->size;
+}
+
 void   myfree (void *ptr, char *file, int line)
 {
+    if (!is_initialized) {
+        initialize_heap();
+        //throw error - nothing to free as heap was not yet initialized
+        exit(2);
+    }
+    
+    //check to make sure ptr is within heap
+    if (((char *)ptr < heap.bytes + 8) || ((char *) ptr > heap.bytes + MEMLENGTH)) {
+        //throw error - out of bounds
+        exit(2);
+    }
 
+    header *ptr1 = (header *)heap.bytes;
+    header *prev = NULL;
+    while ((char*)ptr1 + 8 < (char *)ptr) { //ptr points to beginning of payload, not to header
+        prev = ptr1;
+        ptr1 = (header *)((char*)ptr1 + ptr1->size);
+    }
+
+    if ((char *)ptr1 + 8 == (char *)ptr) {
+        //ptr1 points to start of header, therefore ptr refers to valid payload.
+        if (ptr1->is_available) {
+            //throw error - don't free something twice
+            exit(2);
+        }
+        ptr1->is_available = 1;
+
+        //check for coalesence:
+        header *forward = (header *)((char *)ptr1 + ptr1->size);
+        if (((char *) forward < heap.bytes + MEMLENGTH) && (forward->is_available)) {
+            coalesce(ptr1, forward);
+        }
+        if ((prev != NULL) && (prev->is_available)) {
+            //check to make sure its not NULL, in case ptr refers to the first chunk
+            coalesce(prev, ptr1);
+        }
+    }
+    
+    else {
+        //throw error, ptr is invalid
+        exit(2);
+    }
 }
