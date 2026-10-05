@@ -82,7 +82,7 @@ void *tryAllocate(size_t size_to_allocate) {
     }
     //if we reach here then there's no available chunks with adequate size
     //To do: print message to standard error
-    exit(2);
+    return NULL; // So caller handles it
 }
 
 
@@ -92,28 +92,34 @@ void *mymalloc(size_t size, char *file, int line)
     {
         initialize_heap();
     }
+    size_t requestedSize = size;
     size = (size+7) & ~7; //rounds up to 8 byte multiple
 
     void *returnptr = tryAllocate(size);
+    if (returnptr == NULL){
+        fprintf(stderr, "malloc: Unable to allocate %zu bytes (%s:%d)\n", requestedSize, file, line);
+    }
     //return a pointer to THE PAYLOAD of an allocated chunk (so after the header)
     return returnptr;
 }
 
-void coalesce (header *chunk1, header *chunk2) {
+static void coalesce (header *chunk1, header *chunk2) {
     chunk1->size += chunk2->size;
 }
 
 void   myfree (void *ptr, char *file, int line)
 {
     if (!is_initialized) {
-        initialize_heap();
+        // no initialization needed
         //throw error - nothing to free as heap was not yet initialized
+        fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
         exit(2);
     }
     
     //check to make sure ptr is within heap
     if (((char *)ptr < heap.bytes + 8) || ((char *) ptr > heap.bytes + MEMLENGTH)) {
         //throw error - out of bounds
+        fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
         exit(2);
     }
 
@@ -128,6 +134,7 @@ void   myfree (void *ptr, char *file, int line)
         //ptr1 points to start of header, therefore ptr refers to valid payload.
         if (ptr1->is_available) {
             //throw error - don't free something twice
+            fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
             exit(2);
         }
         ptr1->is_available = 1;
@@ -145,6 +152,7 @@ void   myfree (void *ptr, char *file, int line)
     
     else {
         //throw error, ptr is invalid
+        fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
         exit(2);
     }
 }
