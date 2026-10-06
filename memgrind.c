@@ -128,6 +128,6 @@ int main(void) {
     double elapsed_sec = end_time - start_time;
     elapsed_sec /= 50;
 
-    printf("Average time for workload: %.3f ms", elapsed_sec*1000);
+    printf("Average time for workload: %.3f ms\n", elapsed_sec*1000);
 
 }
