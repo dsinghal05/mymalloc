@@ -112,14 +112,14 @@ void   myfree (void *ptr, char *file, int line)
     if (!is_initialized) {
         // no initialization needed
         //throw error - nothing to free as heap was not yet initialized
-        fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
+        fprintf(stderr, "free: Heap not yet initialized (%s:%d)\n", file, line);
         exit(2);
     }
     
     //check to make sure ptr is within heap
     if (((char *)ptr < heap.bytes + 8) || ((char *) ptr > heap.bytes + MEMLENGTH)) {
         //throw error - out of bounds
-        fprintf(stderr, "free: Inappropriate pointer (%s:%d)\n", file, line);
+        fprintf(stderr, "free: pointer out of bounds (%s:%d)\n", file, line);
         exit(2);
     }
 

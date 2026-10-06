@@ -33,50 +33,71 @@ void taskTwo() {
 
 void taskThree() {
     void *ptrArray[120];
-    int arrayCount = -1;
+    int allocCount = 0; //number of active allocations
     int totalAllocations = 0;
 
     while (totalAllocations < 120) {
         int random = rand() % 2;
         if (random == 0) {
             // Allocate a one byte object
-            arrayCount++;
-            ptrArray[arrayCount] = malloc(1);
+            ptrArray[allocCount] = malloc(1);
+            allocCount++;
             totalAllocations++;
         }
         if (random == 1) {
             // Free (if possible)
-            if (arrayCount > -1) {
-                free(ptrArray[arrayCount]);
-                arrayCount--;
+            if (allocCount > 0) {
+                int randomInd = rand() % allocCount;
+                free(ptrArray[randomInd]);
+                ptrArray[randomInd] = ptrArray[allocCount-1]; //swaps last element into this index
+                allocCount--;
             }
         }
     }
-    while (arrayCount > -1) {
+    while (allocCount > 0) {
         //deallocate all remaining objects
-        free(ptrArray[arrayCount]);
-        arrayCount--;
+        free(ptrArray[allocCount-1]);
+        allocCount--;
     }
 }
 
 void taskFour() {
-    void *ptrArray[150];
-    for (int i = 0; i < 50; i++) {
-        ptrArray[i] = malloc(8);
+    void *ptrArray[100];
+    
+    for (int i = 0; i < 100; i++) {
+        int size = (rand() % 3) + 1;
+        ptrArray[i] = malloc(size * 8);
     }
-    for (int i = 50; i < 100; i++) {
-        ptrArray[i] = malloc(16);
-    }
-    for (int i = 100; i < 150; i++) {
-        ptrArray[i] = malloc(24);
-    }
-    for (int i = 149; i > -1; i--) {
-        free(ptrArray[i]);
+    for (int i = 0; i < 99; i += 2) {
+        int coin = rand() % 2;
+        if (coin == 1) {
+            free(ptrArray[i+1]);
+            free(ptrArray[i]);
+        }
+        else {
+            free(ptrArray[i]);
+            free(ptrArray[i+1]);
+        }
     }
 }
 
 void taskFive() {
-    //to do
+    void *ptrArray[100];
+
+    for (int i = 0; i < 100; i++) {
+        ptrArray[i] = malloc(24);
+    }
+
+    for (int i = 0; i < 100; i += 2) {
+        free(ptrArray[i]);
+    }
+
+    for (int i = 1; i < 100; i += 2) {
+        free(ptrArray[i]);
+    }
+
+    void *largeBlock = malloc(3000);
+    free(largeBlock);
 }
 
 int main(void) {
@@ -107,6 +128,6 @@ int main(void) {
     double elapsed_sec = end_time - start_time;
     elapsed_sec /= 50;
 
-    printf("Average time for workload: %.3f ms (%.6f seconds)\n", elapsed_sec*1000, elapsed_sec);
+    printf("Average time for workload: %.3f ms", elapsed_sec*1000);
 
 }
