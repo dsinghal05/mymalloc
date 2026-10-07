@@ -88,6 +88,10 @@ void *tryAllocate(size_t size_to_allocate) {
 
 void *mymalloc(size_t size, char *file, int line)
 {
+    if (size <= 0) {
+        fprintf(stderr, "malloc: Unable to allocate %zu bytes (%s:%d)\n", size, file, line);
+        return NULL;
+    }
     if (!is_initialized) 
     {
         initialize_heap();

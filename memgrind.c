@@ -64,10 +64,12 @@ void taskThree() {
 void taskFour() {
     void *ptrArray[100];
     
+    //allocate 100 chunks of sizes varying from 8 to 24 bytes
     for (int i = 0; i < 100; i++) {
         int size = (rand() % 3) + 1;
         ptrArray[i] = malloc(size * 8);
     }
+    //free chunks in semi random order
     for (int i = 0; i < 99; i += 2) {
         int coin = rand() % 2;
         if (coin == 1) {
@@ -87,7 +89,7 @@ void taskFive() {
     for (int i = 0; i < 100; i++) {
         ptrArray[i] = malloc(24);
     }
-
+    //creates a checkerboard pattern by freeing even indexed pointers 
     for (int i = 0; i < 100; i += 2) {
         free(ptrArray[i]);
     }
@@ -95,7 +97,7 @@ void taskFive() {
     for (int i = 1; i < 100; i += 2) {
         free(ptrArray[i]);
     }
-
+    //verify full coalescing by allocating a large chunk
     void *largeBlock = malloc(3000);
     free(largeBlock);
 }
