@@ -12,6 +12,7 @@ int main(int argc, char**argv){
     if (argv[1][0] == '1'){
         int x = 0;
         char* blockToKeep = malloc(8); // need to initialize first
+        blockToKeep[0] = 'x';
         free(&x); // wasn't made by malloc
     }
 
