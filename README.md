@@ -13,18 +13,27 @@ Chunk splitting: When an available chunk is found that has a size greater than t
 myfree()
 ---------
 Whenever an object is deallocated, myfree() tests for forward and backwards coalescing so adjacent free blocks are always coalesced. 
+
 Forward Coalescing: Checks if the contiguous forward chunk is within heap boundaries and free. If so, their sizes are merged.
+
 Backward Coalescing: A prev pointer trails one chunk behind the target address. If prev is free, it absorbs the newly freed block (and any forward chunk it already merged with).
+
 These two systems work together to ensure that if both the preceding and following chunks are free, all three are combined into one contiguous chunk. 
 
 Error Handling and Detection
 -----------------------------
 The program detects invalid operations and provides error messages, and exits with status code 2. 
+
 -Rejects mymalloc() calls requesting 0 or negative bytes
+
 -Rejects free calls made prior to heap initialization
+
 -Verifies pointers passed to free fall within bounds of heap
+
 -Ensures pointers passed to free match the exact start of a payload
+
 -Rejects attempts to free memory if already available
+
 The program reports and remaining allocated chunks and total leaked bytes at exit. 
 
 Correction Testing
@@ -44,9 +53,15 @@ The program is verified using 5 dedicated test programs:
 Stress Testing and Benchmark
 -----------------------------
 memgrind.c benchmarks the program across 50 iterations of 5 workloads, timed with gettimeofday().
-Task 1: Allocates and frees blocks of increasing power-of-two sizes (8, 16, 32, ..., 1024 bytes) in reverse order.   
+
+Task 1: Allocates and frees blocks of increasing power-of-two sizes (8, 16, 32, ..., 1024 bytes) in reverse order.  
+
 Task 2: Allocates 120 small 8-byte objects sequentially, then frees all 120 sequentially.   
+
 Task 3: Alternates randomly between allocating 1-byte objects and freeing an arbitrary active object until 120 allocations occur, then drains all remaining blocks.   
+
 Task 4: Allocates 100 blocks of random sizes and deallocates them in randomized pairwise order.
+
 Task 5: Creates a "checkerboard" fragmentation pattern by allocating small blocks and freeing all even-indexed chunks, then freeing odd-indexed chunks to stress bidirectional coalescing.
+
 Average time for workload: ~0.120 ms
