@@ -30,10 +30,15 @@ The program reports and remaining allocated chunks and total leaked bytes at exi
 Correction Testing
 ---------------------
 The program is verified using 5 dedicated test programs:
+
 **`testingCoalesce.c`**: Verifies all three coalescing pathways (backward, forward, and bidirectional).
+
 **`testingErrors.c`**: Validates robust detection and error handling for invalid operations.
+
 **`testingFree.c`**: Validates memory reclamation over repeated allocation cycles.
+
 **`testingLeak.c`**: Confirms automatic memory leak detection.
+
 **`testingMallocFail.c`**: Tests boundary conditions and graceful failure handling.
 
 Stress Testing and Benchmark
